@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Short Polling Demo</title>
+</head>
+<body>
+    <h1>Web Sockets Demo</h1>
+    <div id="messages-container">
+        <ul id="messages"></ul>
+    </div>
+    <input type="text" id="message-input" placeholder="Type a message..." />
+    <button id="send-button">Send</button>
+</body>
+<script src="http://localhost:3000/socket.io/socket.io.js"></script>
+<script>
+    const socket = io('http://localhost:3000');
+
+    const button = document.getElementById('send-button');
+    const input = document.getElementById('message-input');
+
+    button.addEventListener('click', () => {
+        const message = input.value;
+        if (message) {
+            socket.emit('message', message);
+            input.value = '';
+            const messagesList = document.getElementById('messages');
+            const newMessageItem = document.createElement('li');
+            newMessageItem.textContent = `You: ${message}`;
+            messagesList.appendChild(newMessageItem);
+        }
+    });
+
+    socket.on('message', (message) => {
+        const messagesList = document.getElementById('messages');
+        const newMessageItem = document.createElement('li');
+        newMessageItem.textContent = message;
+        messagesList.appendChild(newMessageItem);
+    });
+</script>
