@@ -9,6 +9,8 @@ app.use(cors({
 app.use(express.json());
 
 let data = 'Initial data';
+// Demo simplification: no timeout on held requests, and no cleanup if a
+// client disconnects while parked here (see README's revision notes).
 const onHoldClients = [];
 app.get('/data', (req, res) => {
     const clientData = req.query.data;

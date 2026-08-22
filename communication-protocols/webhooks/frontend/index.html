@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Webhooks Demo</title>
+</head>
+<body>
+    <h1>Webhooks Demo</h1>
+    <p>
+        Placing an order responds immediately. Nothing on this page polls for
+        the result - three seconds later the backend calls itself back
+        (simulating a third-party server) and that delivery shows up below
+        over Server-Sent Events, purely so we can watch it happen.
+    </p>
+    <button id="order-button">Place Order</button>
+    <div id="status"></div>
+    <h2>Webhook deliveries received</h2>
+    <ul id="events"></ul>
+
+    <script>
+        const API_BASE = 'http://localhost:3000';
+        const statusEl = document.getElementById('status');
+        const eventsEl = document.getElementById('events');
+
+        // Register this server's own /webhooks/receive route as the
+        // subscriber. In a real system this would be a different service
+        // entirely (e.g. your backend registering a URL with Stripe).
+        fetch(`${API_BASE}/webhooks/subscribe`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ url: `${API_BASE}/webhooks/receive` }),
+        });
+
+        const eventSource = new EventSource(`${API_BASE}/events`);
+        eventSource.onmessage = (message) => {
+            const event = JSON.parse(message.data);
+            const item = document.createElement('li');
+            item.textContent = `[${event.type}] order ${event.data.orderId} (${event.data.item}) completed at ${event.createdAt}`;
+            eventsEl.appendChild(item);
+            statusEl.textContent = 'Webhook received!';
+        };
+
+        document.getElementById('order-button').addEventListener('click', async () => {
+            statusEl.textContent = 'Placing order...';
+            const response = await fetch(`${API_BASE}/orders`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ item: 'Widget' }),
+            });
+            const order = await response.json();
+            statusEl.textContent = `Order ${order.orderId} accepted (status: ${order.status}). Waiting for webhook...`;
+        });
+    </script>
+</body>
+</html>

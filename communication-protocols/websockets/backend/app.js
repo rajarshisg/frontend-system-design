@@ -24,17 +24,6 @@ const io = new Server(httpServer, {
 });
 
 
-let data = 'Initial data';
-const onHoldClients = [];
-app.get('/data', (req, res) => {
-    const clientData = req.query.data;
-    if (data != clientData) {
-        res.json({ data });
-    } else {
-        onHoldClients.push(res);
-    }
-})
-
 io.on('connection', (socket) => {
     console.log(`User Connected: ${socket.id}`);
 

@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Short Polling Demo</title>
+    <title>Long Polling Demo</title>
 </head>
 <body>
-    <h1>Short Polling Demo</h1>
+    <h1>Long Polling Demo</h1>
     <div id="data-container"></div>
 </body>
 <script>
@@ -21,13 +21,6 @@
         }
     }
 
-    pollData(); // Initial call to fetch data immediately
-
-    // // Poll for data every 5 seconds
-    // const intervalId = setInterval(pollData, 5000);
-
-    // // cleanup on page unload
-    // window.addEventListener('beforeunload', () => {
-    //     clearInterval(intervalId);
-    // });
+    pollData(); // Initial call; pollData re-invokes itself on every response,
+                // which is what makes this long polling instead of short polling.
 </script>
