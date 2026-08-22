@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>You Won a Free iPhone!</title>
+    <style>
+        body { margin: 0; font-family: sans-serif; }
+        h2 { position: absolute; top: 20px; left: 20px; color: #27ae60; }
+        #decoy-btn {
+            position: absolute;
+            top: 150px;
+            left: 60px;
+            width: 220px;
+            height: 50px;
+            font-size: 16px;
+            background: #27ae60;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            z-index: 1;
+        }
+        #victim-frame {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 800px;
+            height: 400px;
+            border: none;
+            z-index: 2;
+            opacity: 0.0001;
+        }
+        #status {
+            position: absolute;
+            top: 300px;
+            left: 20px;
+            max-width: 700px;
+            font-family: monospace;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+<body>
+    <h2>🎉 Congratulations! You've won a FREE iPhone! 🎉</h2>
+    <button id="decoy-btn">Claim Now</button>
+
+    <!-- Same attack markup as the vulnerable demo, completely unchanged.
+         What's different is what the BROWSER does with it, because the
+         victim server now sends X-Frame-Options / frame-ancestors. -->
+    <iframe id="victim-frame" src="http://localhost:3000/victim"></iframe>
+
+    <pre id="status">Open devtools → Console to see the browser refuse to render the framed page.</pre>
+</body>
+</html>

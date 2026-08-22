@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>XSS Mitigation Example (CSP)</title>
+</head>
+<body>
+    <h1 id="welcome-banner">Hello</h1>
+</body>
+
+<!--
+Same payload as the vulnerable demo, kept here so you can confirm it now
+FAILS under this page's CSP (see index.js for the header). Watch the
+browser console for a "Refused to execute inline event handler" error
+instead of the alert firing.
+<img src="does-not-exist"
+     onerror="
+       const img = document.createElement('img');
+       img.src = 'fallback-does-not-exist';
+       img.onerror = function () {
+         console.log('Second onerror executed');
+       };
+       document.body.appendChild(img);
+
+       createPost('HACKED', 'THIS IS AN XSS TEST');
+
+       window.addEventListener('keydown', function (event) {
+         if (event.key === 'Enter') {
+           console.log('Keyboard event captured');
+         }
+       });
+     ">
+To test (encodeUriComponent of above) - "%3Cimg%20src%3D%22does-not-exist%22%0A%20%20%20%20%20onerror%3D%22%0A%20%20%20%20%20%20%20const%20img%20%3D%20document.createElement('img')%3B%0A%20%20%20%20%20%20%20img.src%20%3D%20'fallback-does-not-exist'%3B%0A%20%20%20%20%20%20%20img.onerror%20%3D%20function%20()%20%7B%0A%20%20%20%20%20%20%20%20%20console.log('Second%20onerror%20executed')%3B%0A%20%20%20%20%20%20%20%7D%3B%0A%20%20%20%20%20%20%20document.body.appendChild(img)%3B%0A%0A%20%20%20%20%20%20%20createPost('HACKED'%2C%20'THIS%20IS%20AN%20XSS%20TEST')%3B%0A%0A%20%20%20%20%20%20%20window.addEventListener('keydown'%2C%20function%20(event)%20%7B%0A%20%20%20%20%20%20%20%20%20if%20(event.key%20%3D%3D%3D%20'Enter')%20%7B%0A%20%20%20%20%20%20%20%20%20%20%20console.log('Keyboard%20event%20captured')%3B%0A%20%20%20%20%20%20%20%20%20%7D%0A%20%20%20%20%20%20%20%7D)%3B%0A%20%20%20%20%20%22%3E"
+-->
+<script nonce="randomkey">
+    const queryParams = new URLSearchParams(window.location.search);
+    const username = queryParams.get('username');
+    const welcomeBanner = document.getElementById('welcome-banner');
+
+    // NOTE: this line is intentionally left just as unsafe as the vulnerable
+    // version (.innerHTML, no escaping) - this demo's whole point is that
+    // CSP stops the exploit even though this sink is still bad practice.
+    // Try the same payload as in ../vulnerability/01-example.html:
+    //   http://localhost:3000/?username=<img src="x" onerror="alert('You have been hacked!')">
+    // Open devtools console: instead of an alert, you'll see Chrome log a
+    // CSP violation and refuse to run the injected onerror handler, because
+    // script-src has no 'unsafe-inline' and the nonce below only covers
+    // the ACTUAL <script> tag we authored - it doesn't cover attacker HTML.
+    // CSP is a safety net for when a sink like this slips through code
+    // review, not a substitute for fixing the sink (use .textContent, or a
+    // sanitizer like DOMPurify, for real code).
+    if (username) welcomeBanner.innerHTML = `Hello ${username}`;
+
+    // Not itself an injection point - shows what an attacker could still
+    // trigger via any *unblocked* script execution (e.g. a sink CSP doesn't
+    // cover, like a same-origin script the app itself loads): silently
+    // calling authenticated app functions as the logged-in user.
+    function createPost(title, content) {
+        const xhr = new XMLHttpRequest();
+        xhr.open('POST', '/api/posts', true);
+        xhr.setRequestHeader('Content-Type', 'application/json');
+        xhr.onreadystatechange = function() {
+            if (xhr.readyState === 4 && xhr.status === 200) {
+                const response = JSON.parse(xhr.responseText);
+                console.log('Post created:', response);
+            }
+        };
+        const postData = JSON.stringify({ title, content });
+        xhr.send(postData);
+    }
+</script>
+
