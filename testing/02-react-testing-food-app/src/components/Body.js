@@ -1,4 +1,4 @@
-import RestaurantCard, { withPromtedLabel } from "./RestaurantCard";
+import RestaurantCard, { withPromotedLabel } from "./RestaurantCard";
 import { useState, useEffect, useContext } from "react";
 import Shimmer from "./Shimmer";
 import { Link } from "react-router-dom";
@@ -12,7 +12,7 @@ const Body = () => {
 
   const [searchText, setSearchText] = useState("");
 
-  const RestaurantCardPromoted = withPromtedLabel(RestaurantCard);
+  const RestaurantCardPromoted = withPromotedLabel(RestaurantCard);
 
   // Whenever state variables update, react triggers a reconciliation cycle(re-renders the component)
 
@@ -22,17 +22,17 @@ const Body = () => {
 
   const fetchData = async () => {
     const data = await fetch(
-      "https://www.swiggy.com/dapi/restaurants/list/v5?lat=12.9351929&lng=77.62448069999999&page_type=DESKTOP_WEB_LISTING"
+      "https://namastedev.com/api/v1/listRestaurants"
     );
 
     const json = await data.json();
 
     // Optional Chaining
     setListOfRestraunt(
-      json?.data?.cards[2]?.card?.card?.gridElements?.infoWithStyle?.restaurants
+      json?.data?.data?.cards[1]?.card?.card?.gridElements?.infoWithStyle?.restaurants
     );
     setFilteredRestaurant(
-      json?.data?.cards[2]?.card?.card?.gridElements?.infoWithStyle?.restaurants
+      json?.data?.data?.cards[1]?.card?.card?.gridElements?.infoWithStyle?.restaurants
     );
   };
 
@@ -65,10 +65,6 @@ const Body = () => {
           <button
             className="px-4 py-2 bg-green-100 m-4 rounded-lg"
             onClick={() => {
-              // Filter the restraunt cards and update the UI
-              // searchText
-              console.log(searchText);
-
               const filteredRestaurant = listOfRestaurants.filter((res) =>
                 res.info.name.toLowerCase().includes(searchText.toLowerCase())
               );

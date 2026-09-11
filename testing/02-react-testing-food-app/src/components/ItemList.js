@@ -39,7 +39,7 @@ const ItemList = ({ items, dummy }) => {
                 Add +
               </button>
             </div>
-            <img src={CDN_URL + item.card.info.imageId} className="w-full" />
+            <img src={CDN_URL + item.card.info.imageId} className="w-full" onError={(e) => { e.target.src = "https://via.placeholder.com/100?text=No+Image"; }} />
           </div>
         </div>
       ))}
